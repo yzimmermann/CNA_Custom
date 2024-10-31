@@ -1,0 +1,18 @@
+{
+    "experiment_number": 35,
+    "epochs": 500,
+    "lr_model": 0.001,
+    "lr_activation": 1e-08,
+    "weight_decay": 5e-12,
+    "num_hidden_features": 500,
+    "num_layers": 2,
+    "with_clusters": true,
+    "normalize": true,
+    "clusters": 10,
+    "activation_type": "ActivationType.RAT",
+    "recluster_option": "ReclusterOption.ITR",
+    "dataset_type": "WikipediaNetwork",
+    "dataset_name": "Chameleon",
+    "task": "node_classification",
+    "model": "DirGCNConv"
+}

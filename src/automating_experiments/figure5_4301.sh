@@ -1,0 +1,1 @@
+python scripts/execute_experiments.py --config figure_5/ogbn-arxiv_baseline_sageconv --num_seeds 5

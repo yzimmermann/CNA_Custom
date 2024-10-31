@@ -1,0 +1,18 @@
+{
+    "experiment_number": 39010101,
+    "epochs": 400,
+    "lr_model": 1e-03,
+    "lr_activation": 1e-04,
+    "weight_decay": 5e-08,
+    "num_hidden_features": 360,
+    "num_layers": 1,
+    "with_clusters": true,
+    "normalize": true,
+    "clusters": 12,
+    "activation_type": "ActivationType.RAT",
+    "recluster_option": "ReclusterOption.ITR",
+    "dataset_type": "Planetoid",
+    "dataset_name": "Cora",
+    "task": "node_classification",
+    "model": "GATConv"
+}

@@ -1,0 +1,18 @@
+{
+    "experiment_number": 37010402,
+    "epochs": 400,
+    "lr_model": 1e-03,
+    "lr_activation": 1e-05,
+    "weight_decay": 5e-02,
+    "num_hidden_features": 60,
+    "num_layers": 2,
+    "with_clusters": false,
+    "normalize": false,
+    "clusters": 12,
+    "activation_type": "ActivationType.RELU",
+    "recluster_option": "ReclusterOption.ITR",
+    "dataset_type": "Planetoid",
+    "dataset_name": "Cora",
+    "task": "node_classification",
+    "model": "TransformerConv"
+}

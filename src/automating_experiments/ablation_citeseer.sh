@@ -1,0 +1,2 @@
+python scripts/execute_experiments.py --config mod_citesser_8_transformerconv_cluster_normalize_activate  --num_seed 20
+python scripts/execute_experiments.py --config mod_citeseer_8_transformerconv_cluster_normalize --num_seed 20

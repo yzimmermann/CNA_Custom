@@ -1,0 +1,18 @@
+{
+    "experiment_number": 40020232,
+    "epochs": 400,
+    "lr_model": 1e-05,
+    "lr_activation": 1e-05,
+    "weight_decay": 1e-08,
+    "num_hidden_features": 280,
+    "num_layers": 32,
+    "with_clusters": false,
+    "normalize": false,
+    "clusters": 14,
+    "activation_type": "ActivationType.RELU",
+    "recluster_option": "ReclusterOption.ITR",
+    "dataset_type": "CitationFull",
+    "dataset_name": "CiteSeer",
+    "task": "node_classification",
+    "model": "GCNConv"
+}

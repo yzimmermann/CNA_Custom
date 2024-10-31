@@ -1,0 +1,18 @@
+{
+    "experiment_number": 35,
+    "epochs": 100,
+    "lr_model": 0.001,
+    "lr_activation": 1e-05,
+    "weight_decay": 0.05,
+    "num_hidden_features": 80,
+    "num_layers": 4,
+    "with_clusters": true,
+    "normalize": true,
+    "clusters": 8,
+    "activation_type": "ActivationType.RAT",
+    "recluster_option": "ReclusterOption.ITR",
+    "dataset_type": "Amazon",
+    "dataset_name": "Photo",
+    "task": "node_classification",
+    "model": "TransformerConv"
+}

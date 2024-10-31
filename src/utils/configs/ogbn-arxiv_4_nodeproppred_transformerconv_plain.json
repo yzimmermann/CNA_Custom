@@ -1,0 +1,19 @@
+{
+	"experiment_number": 52,
+	"epochs": 300,
+	"lr_model": 1e-3,
+	"lr_activation": 1e-4,
+	"weight_decay": 1e-6,
+	"num_hidden_features": 400,
+	"num_layers": 4,
+	"with_clusters": false,
+	"normalize": false,
+	"clusters": 12,
+	"activation_type": "ActivationType.RAT",
+	"recluster_option": "ReclusterOption.ITR",
+	"dataset_type": "PygNodePropPredDataset",
+	"dataset_name": "ogbn-arxiv",
+	"task": "node_prop_pred",
+	"model": "TransformerConv"
+}
+

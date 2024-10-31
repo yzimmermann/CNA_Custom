@@ -1,0 +1,14 @@
+python scripts/execute_experiments.py --config mod_cora_4_gcnconv  --num_seed 20
+python scripts/execute_experiments.py --config mod_cora_4_gcnconv_cluster --num_seed 20
+python scripts/execute_experiments.py --config mod_cora_4_gcnconv_cluster_normalize --num_seed 20
+python scripts/execute_experiments.py --config mod_cora_4_gcnconv_activate_cluster --num_seed 20
+python scripts/execute_experiments.py --config mod_cora_4_gcnconv_activate --num_seed 20
+python scripts/execute_experiments.py --config mod_cora_4_gcnconv_normalize --num_seed 20
+python scripts/execute_experiments.py --config mod_cora_4_gcnconv_activate_normalize --num_seed 20
+python scripts/execute_experiments.py --config mod_cora_4_gcnconv_activate_cluster_normalize --num_seed 20
+python scripts/execute_experiments.py --config mod_cora_4_gatconv_activate_cluster_normalize --num_seed 20
+python scripts/execute_experiments.py --config mod_cora_4_transformerconv_activate_cluster_normalize --num_seed 20
+python scripts/execute_experiments.py --config mod_cora_4_sageconv_activate_cluster_normalize --num_seed 20
+python scripts/execute_experiments.py --config mod_cora_4_gatconv --num_seed 20
+python scripts/execute_experiments.py --config mod_cora_4_transformerconv --num_seed 20
+python scripts/execute_experiments.py --config mod_cora_4_sageconv --num_seed 20

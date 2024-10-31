@@ -1,0 +1,18 @@
+{
+    "experiment_number": 37010201,
+    "epochs": 400,
+    "lr_model": 0.001,
+    "lr_activation": 1e-05,
+    "weight_decay": 5e-02,
+    "num_hidden_features": 280,
+    "num_layers": 1,
+    "with_clusters": false,
+    "normalize": false,
+    "clusters": 14,
+    "activation_type": "ActivationType.RELU",
+    "recluster_option": "ReclusterOption.ITR",
+    "dataset_type": "Planetoid",
+    "dataset_name": "Cora",
+    "task": "node_classification",
+    "model": "GCNConv"
+}

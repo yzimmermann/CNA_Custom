@@ -1,0 +1,19 @@
+{
+	"experiment_number": 54,
+	"epochs": 1000,
+	"lr_model": 1e-3,
+	"lr_activation": 1e-03,
+	"weight_decay": 1e-7,
+	"num_hidden_features": 300,
+	"num_layers": 4,
+	"with_clusters": true,
+	"clusters": 12,
+	"seed": 1,
+	"activation_type": "ActivationType.RAT",
+	"recluster_option": "ReclusterOption.ITR",
+	"dataset_type": "PygNodePropPredDataset",
+	"dataset_name": "ogbn-arxiv",
+	"task": "node_prop_pred",
+	"model": "ChebConv"
+}
+
