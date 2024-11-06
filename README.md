@@ -1,9 +1,9 @@
 
 # CNA-Modules
 
-Official code for the paper *Graph Neural Networks Need Cluster-Normalize-Activate Modules* accepted at NeurIPS 2024. <br> 
-[![NeurIPS 2024 Poster](https://img.shields.io/badge/NeurIPS%202024-Poster-blue)](https://neurips.cc/virtual/2024/poster/94196)
+Official code for the paper *Graph Neural Networks Need Cluster-Normalize-Activate Modules* accepted at NeurIPS 2024.
 
+[![NeurIPS 2024 Poster](https://img.shields.io/badge/NeurIPS%202024-Poster-blue)](https://neurips.cc/virtual/2024/poster/94196)
 
 ![alt text](images/cna_robots.png "CNA-Modules")
 
