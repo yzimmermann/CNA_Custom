@@ -18,10 +18,12 @@ url: https://github.com/ml-research/cna_modules
 preferred-citation:
   type: article
   authors:
-    - given-names: Maurice
-      family-names: Kraus
+    - given-names: Arseny
+      family-names: Skryagin
     - given-names: Felix
       family-names: Divo
+    - given-names: Mohammad Amin
+      family-names: Ali
     - given-names: Devendra Singh
       family-names: Dhami
     - given-names: Kristian
