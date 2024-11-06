@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+message: If you use this software, please cite it as below.
+authors:
+  - given-names: Arseny
+    family-names: Skryagin
+  - given-names: Felix
+    family-names: Divo
+  - given-names: Mohammad Amin
+    family-names: Ali
+  - given-names: Devendra Singh
+    family-names: Dhami
+  - given-names: Kristian
+    family-names: Kersting
+title: "Graph Neural Networks Need Cluster-Normalize-Activate Modules"
+version: 1.0.0
+date-released: 2024-10-29
+url: https://github.com/ml-research/cna_modules
+preferred-citation:
+  type: article
+  authors:
+    - given-names: Maurice
+      family-names: Kraus
+    - given-names: Felix
+      family-names: Divo
+    - given-names: Devendra Singh
+      family-names: Dhami
+    - given-names: Kristian
+      family-names: Kersting
+  # doi: TBA
+  title: "Graph Neural Networks Need Cluster-Normalize-Activate Modules"
+  year: 2024
+  month: 12
+  url: https://openreview.net/forum?id=faj2EBhdHC
+  type: conference-paper
+  conference: The Thirty-eighth Annual Conference on Neural Information Processing Systems
