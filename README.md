@@ -145,6 +145,20 @@ We ask you kindly to have a look at `src/utils/configs/` to explore other option
 
 - [Arseny Skryagin](https://github.com/askrix/), [Felix Divo](https://felix.divo.link/), [Amin Ali](https://github.com/MAminAli) 
 
+## How to cite
+```latex
+@inproceedings{Skryagin_Graph_Neural_Networks_2024,
+    author = {Skryagin, Arseny and Divo, Felix and Ali, Mohammad Amin and Dhami, Devendra Singh and Kersting, Kristian},
+    month = dec,
+    series = {The Thirty-eighth Annual Conference on Neural Information Processing Systems},
+    title = {{Graph Neural Networks Need Cluster-Normalize-Activate Modules}},
+    url = {https://openreview.net/forum?id=faj2EBhdHC},
+    year = {2024}
+}
+```
+
+
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
