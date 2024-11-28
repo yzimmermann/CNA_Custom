@@ -1,1 +1,0 @@
-python scripts/execute_experiments.py --config figure_5/ogbn-arxiv_cn_gcnconv --num_seeds 5

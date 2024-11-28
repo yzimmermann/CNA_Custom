@@ -180,21 +180,6 @@ def load_dataset(
     return dataset
 
 
-def generate_grid_graph(height=5, width=5):
-    """
-    The generate_grid_graph function generates a grid graph with the specified
-    height and width.
-
-    :param height: Set the number of rows in the grid
-    :param width: Set the number of columns in the grid
-    :return: A dictionary with the following keys:
-    """
-    graph_generator = GridGraph(height=height, width=width)
-    data = graph_generator()
-
-    return data
-
-
 def load_pyg_node_prop_pred_dataset(name="ogbn-arxiv", root="."):
     """
     Load the PygNodePropPredDataset dataset and generate train, validation, and test masks based on percentages.

@@ -1,4 +1,7 @@
 import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
 import json
 import re
 import matplotlib.pyplot as plt
@@ -7,17 +10,23 @@ import seaborn as sns
 from matplotlib.lines import Line2D
 import numpy as np
 # Set font family and serif
-# plt.rcParams['font.family'] = 'Times New Roman'
 plt.rcParams['font.serif'] = 'Times New Roman'
 fontsize_ = 35
 # sns.set_context('paper')
 
 def extract_values_from_line(line):
-    match = re.search(r'Epochs 400 - Max Test Accuracy: ([0-9]+\.[0-9]+) - .* - DE: ([0-9]+\.[0-9]+) -.*', line)
-    if match:
-        return float(match.group(1)), float(match.group(2))
-    else:
-        print(f"Line did not match pattern: {line}")
+    # Try to match format with DE value
+    long_format = re.search(r'Test Accuracy:\s+([0-9.]+).*DE:\s+([0-9.]+)', line)
+    if long_format:
+        test_acc = float(long_format.group(1))
+        de_value = float(long_format.group(2))
+        return test_acc, de_value
+    # Try to match format without DE
+    short_format = re.search(r'Test Accuracy:\s+([0-9.]+)\s+-\s+layers:', line)
+    if short_format:
+        test_acc = float(short_format.group(1))
+        return test_acc, None
+    print(f"No match found in line")
     return None, None
 
 def parse_experiment_code(code):
@@ -67,10 +76,10 @@ def process_json_files(base_path):
                 if txt_file_path and os.path.isfile(txt_file_path):
                     with open(txt_file_path, 'r') as f:
                         for line in f:
-                            if 'Max Test Accuracy' in line or 'Epochs 400' in line:
-                                max_test_acc, de_value = extract_values_from_line(line)
-                                if max_test_acc is not None and de_value is not None:
-                                    test_acc[dataset][model_type][layers].append(max_test_acc)
+                            if 'Max Validation Accuracy' in line:
+                                mtest_acc, de_value = extract_values_from_line(line)
+                                if test_acc is not None and de_value is not None:
+                                    test_acc[dataset][model_type][layers].append(test_acc)
                                     de[dataset][model_type][layers].append(de_value)
                                 else:
                                     print(f"Failed to extract values from line: {line}")
@@ -88,7 +97,6 @@ def plot_and_save_figure(test_acc, de):
     datasets = ['Cora', 'CiteSeer']
 
     # Create a figure with 4 subplots
-    # fig, axs = plt.subplots(4, 2, figsize=(12, 12))
     # fig, axs = plt.subplots(1, 2, figsize=(10, 4))
     fig, axs = plt.subplots(3, 2, figsize=(12, 12))
 

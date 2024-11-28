@@ -1,12 +1,10 @@
-import json
 import os
-import random
 import sys
-
-import numpy as np
-
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
+import json
+import random
+import numpy as np
 import argparse
 import itertools
 import logging
@@ -38,7 +36,6 @@ def execute(json_data=None) -> None:
             "weight_decay": ModelParams.weight_decay,
             "clusters": ModelParams.clusters,
             "num_layers": ModelParams.num_layers,
-            "num_activation": ModelParams.num_activation,
             "n": ModelParams.n,
             "m": ModelParams.m,
             "recluster_option": ModelParams.recluster_option,
@@ -49,7 +46,6 @@ def execute(json_data=None) -> None:
             "log_path": ModelParams.log_path,
             "dataset_type": ModelParams.dataset_type,
         }
-
         # Get all possible combinations of the parameter values
         list_dict = {
             key: value for key, value in params_dict.items() if isinstance(value, list)
@@ -65,7 +61,6 @@ def execute(json_data=None) -> None:
                 weight_decay,
                 clusters,
                 num_layers,
-                num_activation,
                 activation_type,
                 mode,
                 with_clusters,
@@ -79,7 +74,6 @@ def execute(json_data=None) -> None:
                 "weight_decay": weight_decay,
                 "clusters": clusters,
                 "num_layers": num_layers,
-                "num_activation": num_activation,
                 "n": ModelParams.n,
                 "m": ModelParams.m,
                 "activation_type": activation_type,
@@ -94,7 +88,6 @@ def execute(json_data=None) -> None:
             }
 
             set_mode(config["with_clusters"] and config["normalize"])
-
             set_seed(seed=ModelParams.seed)
             # execute the training process
             if ModelParams.task_type.value == "node_regression":
@@ -127,7 +120,6 @@ def execute(json_data=None) -> None:
             "weight_decay": json_data["weight_decay"],
             "clusters": json_data["clusters"],
             "num_layers": json_data["num_layers"],
-            "num_activation": ModelParams.num_activation[0],
             "n": 5,
             "m": 5,
             "activation_type": get_activation_type(json_data["activation_type"]),
@@ -151,7 +143,6 @@ def execute(json_data=None) -> None:
 
             if not os.path.exists(config["log_path"]):
                 os.makedirs(config["log_path"])
-
             set_mode(config["with_clusters"] and config["normalize"])
 
             set_seed(seed=i)  # random.randint(10000, 99999))
@@ -241,7 +232,6 @@ if __name__ == "__main__":
         try:
             with open(f"utils/configs/{args.config.lower()}.json", "r") as file:
                 json_data = json.load(file)
-                #print(json_data)
                 execute(
                     json_data
                 )

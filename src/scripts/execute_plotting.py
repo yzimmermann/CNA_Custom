@@ -1,9 +1,8 @@
 import os
 import sys
-
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-import itertools
 
+import itertools
 from utils.model_params import ActivationType, DistanceMetrics, ReclusterOption
 from utils.visualizations import ConfigComparisonVisualizer
 

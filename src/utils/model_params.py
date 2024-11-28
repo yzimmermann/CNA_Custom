@@ -1,17 +1,12 @@
 import os
 import random
 from enum import Enum
-
 import torch
 
 
 class ActivationType(Enum):
-    RELU = "relu"  # relu
-    RATMODEL = "RationalModel"  # our rational model
+    RELU = "relu"  # ReLU
     RAT = "Rational"  # Lab rational model
-    RPM = "RationalPowerMean"  # RPM rational model with Lab rationals
-    RPMMODEL = "RationalPowerMeanModel"  # RPM rational model with our rationals
-    RWAM = "RationalWeightedArithmeticMean"  # RWAM rational model with Lab rationals
 
 
 class DistanceMetrics(Enum):
@@ -88,22 +83,15 @@ class ModelParams(object):
     """
     A class to represent the model parameters.
     """
-    # 1 CORA
-    # 2 CITESEER
-    # !!!!!!!!!!!!!
-    # TODO: DON'T FORGET TO PERFORM HP SEARCH FOR num_layers = [1] !!!!!!!
-    # !!!!!!!!!!!!!
-    print("Well, hello there!")
     experiment_number = 1  # number of experiment TODO: Think about an identifier for the experiments
     epochs = [300]  # number of epochs (list)
     model_type = LayerType.GCNCONV  # to define the model type TODO: GCNCONV SAGECONV GATCONV TRANSFORMERCONV
-    num_hidden_features = [40, 80, 120, 160, 200, 240, 280, 320, 360, 400]  # [280]  # [60, 120, 160, 200, 240, 280, 320]  # number of hidden features (list)
+    num_hidden_features = [40, 80, 120, 160, 200, 240, 280, 320, 360, 400]  # number of hidden features (list)
     lr_model = [1e-03]  # [1e-4, 1e-5]  # learning rate for the model (list)
     lr_activation = [1e-05]  # learning rate for the activations (list)
     weight_decay = [1e-04]  # weight decay for both
     clusters = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]  # number of clusters (list)
     num_layers = [4]  # [1,2,4,8,16]  # number of layers (list) [64, 96, 128]
-    num_activation = [4]  # number of activations inside RPM (list)
     n = 4  # numerator
     m = 5  # denominator
     recluster_option = ReclusterOption.TH  # options are iterative, thresholding or iterative
@@ -139,7 +127,6 @@ class ModelParams(object):
 
     # ablation metrics
     normalize = True
-
 
     # Set cluster type
     use_gmm = False

@@ -1,4 +1,7 @@
 import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
 import json
 import re
 import matplotlib.pyplot as plt
@@ -41,7 +44,7 @@ def extract_test_accuracy(base_path):
                                     test_acc[model_type][seed_folder].append(test_accuracy)
 
     # Save to JSON file
-    with open('test_accuracy.json', 'w') as f:
+    with open('val_accuracy.json', 'w') as f:
         json.dump(test_acc, f, indent=4)
 
     return test_acc
@@ -51,7 +54,6 @@ def plot_test_accuracy(test_acc):
     model_styles = {
         "GCNConv_CNA": ("-", "CNA"),
         "GCNConv_CN": ("-.", "CN"),
-        # "GCNConv": (":", "GCNConv")  # Exclude GCNConv from plotting
     }
 
     # Create a figure

@@ -1,13 +1,10 @@
 import os
 import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 from tqdm import tqdm
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 import logging
-import os
 from datetime import datetime
-
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -52,7 +49,6 @@ class ModelTrainer:
         self.weight_decay = config["weight_decay"]
         self.clusters = config["clusters"]
         self.num_layers = config["num_layers"]
-        self.num_activation = config["num_activation"]
         self.n = config["n"]
         self.m = config["m"]
         self.activation_type = config["activation_type"]
@@ -127,7 +123,6 @@ class ModelTrainer:
                 clusters=self.clusters,
                 with_clusters=self.with_clusters,
                 normalize=self.normalize,
-                num_activation=self.num_activation,
                 n=self.n,
                 m=self.m,
                 activation_type=self.activation_type,
@@ -155,7 +150,7 @@ class ModelTrainer:
             "WikipediaNetwork",
             "WebKB",
             "PygNodePropPredDataset",
-        ]:
+        ]:  
             loaded_dataset = load_dataset(
                 self.dataset_name,
                 dataset_type=self.dataset_type,
@@ -194,10 +189,10 @@ class ModelTrainer:
         """
         Trains the model using the provided dataset for the specified number of epochs.
         """
-        # print(self.model)
+        print(self.model)
         num_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
         print(f"The number of required params : {num_params}")
-        test_accuracies = []
+        stats = {'val_acc': list(), 'test_acc': list()}
         if self.dataset_type in [
             "CitationFull",
             "Amazon",
@@ -251,7 +246,8 @@ class ModelTrainer:
                     val_acc, val_loss = self._valid(data)
                     test_acc, test_loss = self._test(data)
 
-            test_accuracies.append(test_acc)
+            stats['val_acc'].append(val_acc)
+            stats['test_acc'].append(test_acc)
             print(
                 f"Epoch: {epoch:03d}, Loss: {train_loss:.4f}, "
                 f"Test Accuracy: {test_acc:.4f}, "
@@ -287,10 +283,11 @@ class ModelTrainer:
                 mad_centers = compute_mad_for_centers(h, data, self.dataset.num_classes)
             mad_gen = compute_GMAD(h)
             dirichlet_energy = compute_dirichlet_energy(normalized_laplacian, h)
-            max_test = max(test_accuracies)
+            result = max(zip(stats['val_acc'], stats['test_acc']), key=lambda x: x[0])
             info = (
                 f"Epochs {self.epochs} - "
-                f"Max Test Accuracy: {max_test:.4f} - "
+                f"Max Validation Accuracy: {result[0]:.4f} - "
+                f"Test Accuracy: {result[1]:.4f} - "
                 f"MAD: {mad:.4f} - "
                 f"MADGap: {mad_gap:.4f} - "
                 f"DE: {dirichlet_energy:.4f} - "
@@ -301,10 +298,11 @@ class ModelTrainer:
             logging.info(info)
             print(info)
         else:
-            max_test = max(test_accuracies)
+            result = max(zip(stats['val_acc'], stats['test_acc']), key=lambda x: x[0])
             info = (
                 f"Epochs {self.epochs} - "
-                f"Max Test Accuracy: {max_test:.4f} - "
+                f"Max Validation Accuracy: {result[0]:.4f} - "
+                f"Test Accuracy: {result[1]:.4f} - "
                 f"layers:{self.num_layers}"
             )
             logging.info(info)

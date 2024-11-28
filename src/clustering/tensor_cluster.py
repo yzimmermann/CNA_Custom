@@ -2,14 +2,13 @@ import os
 import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
 import json
 from typing import Optional
-
 import fast_pytorch_kmeans as fpk
 import numpy as np
 import torch
 import torch.nn as nn
-
 from sklearn.mixture import GaussianMixture
 from utils.model_params import DistanceMetrics, ModelParams, ReclusterOption
 
@@ -53,12 +52,6 @@ class ClusterActivation(nn.Module):
 
         self.cluster_indices_history = []
         self.cnt = 0
-        with open("cluster_indices.json", "r") as json_file:
-            cluster_indices_lists = json.load(json_file)
-
-        self.cluster_indices_tensors = []
-        for epoch_cluster_indices in cluster_indices_lists:
-            self.cluster_indices_tensors.append(torch.tensor(epoch_cluster_indices))
 
     def reset_params(self, width: int) -> None:
         self.weight = nn.Parameter(torch.empty(width, device=ModelParams.device))

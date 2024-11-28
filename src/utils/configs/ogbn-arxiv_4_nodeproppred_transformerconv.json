@@ -8,6 +8,7 @@
 	"num_layers": 4,
 	"with_clusters": true,
 	"clusters": 12,
+	"normalize": true,
 	"activation_type": "ActivationType.RAT",
 	"recluster_option": "ReclusterOption.ITR",
 	"dataset_type": "PygNodePropPredDataset",

@@ -1,4 +1,7 @@
+import sys 
 import os 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
 from os import walk
 import matplotlib.pyplot as plt
 import matplotlib
@@ -39,20 +42,37 @@ print(plt.rcParams['font.serif'])
 print(plt.rcParams['font.family'])
 
 
-results = []
 folder = os.getcwd()+"/log_files/experiment800_node_classification_ds_Cora_type_Planetoid_layers_4_Model_SAGEConv/seed0/"
 hypparRegex = r'_hf_[0-9]+_layers_[0-9]+_cl_True_ncl_[0-9]+_'
 hfRegex = r'hf_[0-9]+'
 nclRegex = r'ncl_[0-9]+'
-accRegex = r'Max Test Accuracy: [0-9].+'
+
+# Regex to capture the final line with accuracies
+accRegex = r'Epochs\s+\d+\s+-\s+Max Validation Accuracy:\s+([0-9.]+)\s+-\s+Test Accuracy:\s+([0-9.]+)'
+
+results = []
 filenames = sorted(next(walk(folder), (None, None, []))[2])
+
 for file in filenames:
     tmp = re.findall(hypparRegex, file)[0]
     hf = re.findall(hfRegex, tmp)[0]
     ncl = re.findall(nclRegex, tmp)[0]
-    lines = open(folder+file).readlines()
-    result = [re.findall(accRegex, line) for line in lines][-1][0].split(': ')[1].split(' - ')[0]
-    results.append({'hf': int(hf.split('_')[1]), 'ncl': int(ncl.split('_')[1]), 'test_acc': float(result)})
+    
+    with open(folder+file, 'r') as f:
+        lines = f.readlines()
+        last_line = lines[-1]
+    
+    match = re.search(accRegex, last_line)
+    if match:
+        val_acc = float(match.group(1))
+        test_acc = float(match.group(2))
+        results.append({
+            'hf': int(hf.split('_')[1]), 
+            'ncl': int(ncl.split('_')[1]), 
+            'val_acc': val_acc,
+            'test_acc': test_acc
+        })
+
 results = sorted(results, key=lambda k: (k['hf'], k['ncl']))
 # results = [elm['test_acc'] for elm in results]
 

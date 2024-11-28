@@ -1,11 +1,9 @@
 import os
 import sys
-
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-import logging
-import os
-from datetime import datetime
 
+import logging
+from datetime import datetime
 import numpy as np
 import torch
 
@@ -39,7 +37,6 @@ class RegressionTrainer:
         self.weight_decay = config["weight_decay"]
         self.clusters = config["clusters"]
         self.num_layers = config["num_layers"]
-        self.num_activation = config["num_activation"]
         self.n = config["n"]
         self.m = config["m"]
         self.activation_type = config["activation_type"]
@@ -57,7 +54,6 @@ class RegressionTrainer:
         self.lf = torch.nn.MSELoss()
 
         print(config)
-
         self.activation = None
 
         self.setup_logger()
@@ -78,7 +74,6 @@ class RegressionTrainer:
 
         if os.path.exists(filename):
             print("File already exists!")
-            # return
             os.remove(filename)
 
         # Remove all handlers associated with the root logger object.
@@ -113,7 +108,6 @@ class RegressionTrainer:
             self.activation = RationalOnCluster(
                 clusters=self.clusters,
                 with_clusters=self.with_clusters,
-                num_activation=self.num_activation,
                 n=self.n,
                 m=self.m,
                 activation_type=self.activation_type,
@@ -147,12 +141,12 @@ class RegressionTrainer:
         """
         num_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
         print(f"The number of required params : {num_params}")
-        test_losses = []
-        train_losses = []
+        losses = {'train': list(), 'test': list(), 'val':list()}
         if self.dataset_name == "Chameleon":
             data = get_data("chameleon", split)
         else:
             data = get_data("squirrel", split)
+        print("Here to do some regression estimation!")
         data = data.to(self.device)
 
         print(self.dataset_name, data)
@@ -162,9 +156,9 @@ class RegressionTrainer:
         print(self.model)
         for epoch in range(self.epochs):
             train_loss, val_loss, test_loss = self._train(data)
-
-            test_losses.append(test_loss)
-            train_losses.append(train_loss)
+            losses["train"].append(train_loss)
+            losses["test"].append(test_loss)
+            losses["val"].append(val_loss)
             print(
                 f"Split {split} - "
                 f"Epoch: {epoch:03d}, "
@@ -177,13 +171,13 @@ class RegressionTrainer:
         if torch.cuda.is_available():
             torch.cuda.synchronize()
 
-        min_test_loss = min(test_losses)
-        min_train_loss = min(train_losses)
+        results = min(zip(losses["train"], losses["test"], losses["val"]), key=lambda x: x[2])
         info = (
             f"Split {split} - "
             f"Epochs {self.epochs} - "
-            f"Min Test Loss: {min_test_loss:.4f} - "
-            f"Min Train Loss: {min_train_loss:.4f} - "
+            f"Min Validation Loss: {results[2]:.4f} - "
+            f"Train Loss: {results[0]:.4f} - "
+            f"Test Loss: {results[1]:.4f} - "
             f"layers:{self.num_layers}"
         )
         logging.info(info)
@@ -199,7 +193,7 @@ class RegressionTrainer:
                 self.number_classes,
             )
 
-        return min_test_loss
+        return results[1]
 
     @torch.no_grad()
     def test(self, data):
