@@ -30,7 +30,32 @@ print(f"Number of training graphs: {len(train_dataset)}")
 print(f"Number of test graphs: {len(test_dataset)}")
 print('====================')
 
-# Modelldefinition
+
+def multilabel_weighted_bce_loss(output, target, weights=None):
+    """
+    Weighted Binary Cross Entropy for Multilabel Classification
+
+    Args:
+    - output: Model predictions (logits)
+    - target: Ground truth labels (multilabel)
+    - weights: Optional per-class weight tensor
+    """
+    if weights is None:
+        # Default: compute class frequencies and invert
+        pos_freq = target.float().mean(dim=0)
+        weights = 1.0 / (pos_freq + 1e-8)
+
+    # Compute BCE loss with per-class weights
+    bce_loss = F.binary_cross_entropy_with_logits(
+        output,
+        target,
+        pos_weight=weights.to(output.device),
+        reduction='none'
+    )
+
+    return bce_loss.mean()
+
+# Model Definition
 class Net(torch.nn.Module):
     def __init__(self, activation, hidden_features, num_layer, layer_type):
         super(Net, self).__init__()
@@ -160,8 +185,9 @@ print(model)
 # model = GCN(hidden_channels=64).to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
 # print(model)
 
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=0.0001)
-criterion = torch.nn.BCEWithLogitsLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=0.0001)
+criterion = multilabel_weighted_bce_loss
+# criterion = torch.nn.BCEWithLogitsLoss()
 
 def train():
     model.train()
@@ -190,8 +216,6 @@ def test(loader):
             out = model(data.x, data.edge_index, data.batch)
             pred = torch.sigmoid(out).cpu().numpy()  # Convert to probabilities
             labels = data.y.cpu().numpy()
-            print(pred[0])
-            print(labels[0])
             all_preds.append(pred)
             all_labels.append(labels)
 
