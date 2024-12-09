@@ -16,8 +16,9 @@ from torch_geometric.nn import (
 from utils.model_params import LayerType, ModelParams as mp, ActivationType, ReclusterOption
 from clustering.rationals_on_clusters import RationalOnCluster
 
-from sklearn.metrics import average_precision_score
+#from sklearn.metrics import average_precision_score
 import numpy as np
+from torchmetrics.classification import MultilabelAveragePrecision
 
 # Dataset laden
 train_dataset = LRGBDataset(root='data/LRGBDataset', name='Peptides-func', split='train')
@@ -74,7 +75,7 @@ class Net(torch.nn.Module):
         h = self.model_(x, edge_index)
         out = h.relu()  # self.activation(h)
         out = global_mean_pool(out, batch)
-        out = F.dropout(out, p=0.5, training=self.training)
+        out = F.dropout(out, p=0.1, training=self.training)
         out = self.out_layer(out)
         return out
 
@@ -97,7 +98,7 @@ class Net(torch.nn.Module):
         elif self.layer_type == LayerType.SAGECONV:
             return SAGEConv(input_features, output_features)
         elif self.layer_type == LayerType.GATCONV:
-            return GATConv(input_features, output_features)
+            return GATConv(input_features, output_features, heads=3, edge_dim=train_dataset.num_edge_features, concat=False)
         elif self.layer_type == LayerType.TRANSFORMERCONV:
             return TransformerConv(input_features, output_features)
         elif self.layer_type == LayerType.CHEBCONV:
@@ -141,19 +142,20 @@ for step, data in enumerate(train_loader):
     print()
 
 activation = RationalOnCluster(
-    clusters=24,
-    with_clusters=True,
+    clusters=1,
+    with_clusters=False,
     # num_activation=8,
     n=5,
     m=5,
     activation_type=ActivationType.RAT,
     mode=True,
+    normalize=False,
     recluster_option=ReclusterOption.ITR,
 )
 
 # activation = torch.nn.ReLU
 
-model = Net(activation, 128, 4, LayerType.GCNCONV).to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+model = Net(activation, 300, 5, LayerType.GATCONV).to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
 print(model)
 
 # class GCN(torch.nn.Module):
@@ -185,9 +187,9 @@ print(model)
 # model = GCN(hidden_channels=64).to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
 # print(model)
 
-optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=0.0001)
-criterion = multilabel_weighted_bce_loss
-# criterion = torch.nn.BCEWithLogitsLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=0.0001)
+# criterion = multilabel_weighted_bce_loss
+criterion = torch.nn.BCEWithLogitsLoss()
 
 def train():
     model.train()
@@ -203,7 +205,7 @@ def train():
         total_loss += loss.item()
         return total_loss / len(train_loader)
 
-
+AP = MultilabelAveragePrecision(num_labels=train_dataset.num_classes, average='macro')
 def test(loader):
     model.eval()
     all_preds = []
@@ -222,7 +224,7 @@ def test(loader):
     all_preds = np.concatenate(all_preds)
     all_labels = np.concatenate(all_labels)
 
-    uap = average_precision_score(all_labels, all_preds, average='macro')
+    uap = AP(torch.tensor(all_preds), torch.tensor(all_labels))
     return uap
 
 

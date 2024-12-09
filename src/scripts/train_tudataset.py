@@ -14,9 +14,13 @@ from torch_geometric.nn import (
 from utils.model_params import LayerType, ModelParams as mp, ActivationType, ReclusterOption
 from clustering.rationals_on_clusters import RationalOnCluster
 
+from extra_utils import set_seed
+
+set_seed(71)
+
 # Dataset laden
 # dataset = TUDataset(root='data/TUDataset', name='MUTAG')
-dataset = TUDataset(root='data/TUDataset', name='PROTEINS')
+dataset = TUDataset(root='data/TUDataset', name='ENZYMES')
 print(f'Dataset: {dataset}:')
 print('====================')
 print(f'Number of graphs: {len(dataset)}')
@@ -97,17 +101,25 @@ class Net(torch.nn.Module):
         else:
             raise ValueError(f"Unsupported layer_type: {self.layer_type}")
 
-torch.manual_seed(3) # 0, 1, 2, 3, 4
 dataset = dataset.shuffle()
+total_graphs = len(dataset)
 # MUTAG 
 # train_dataset, test_dataset = dataset[:150], dataset[150:]
 # ENZYMES
-train_dataset, test_dataset = dataset[:951], dataset[951:]
+# Create mask for training, test and validation
+train, test, val = (0.8, 0.1, 0.1)
+train_mask = int(total_graphs * train)
+test_mask = int(total_graphs * test)
+val_mask = int(total_graphs * val)
+train_dataset, test_dataset, val_dataset = dataset[:train_mask], dataset[train_mask:train_mask + test_mask], dataset[train_mask + test_mask:]
 print(f'Number of training graphs: {len(train_dataset)}')
 print(f'Number of test graphs: {len(test_dataset)}')
+print(f'Number of validation graphs: {len(val_dataset)}')
+print(f"Effective % split: ", len(train_dataset) / len(dataset), len(test_dataset) / len(dataset), len(val_dataset) / len(dataset))
 
 train_loader = DataLoader(train_dataset, batch_size=200, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
+val_loader = DataLoader(val_dataset, batch_size=64, shuffle=False)
 
 for step, data in enumerate(train_loader):
     print(f'Step {step + 1}:')
@@ -118,12 +130,13 @@ for step, data in enumerate(train_loader):
 
 activation = RationalOnCluster(
     clusters=8,
-    with_clusters=True,
+    with_clusters=False,
     #num_activation=8,
     n=5,
-    m=5,
+    m=4,
     activation_type=ActivationType.RAT,
     mode=True,
+    normalize=False,
     recluster_option=ReclusterOption.ITR,
 )
 
@@ -181,16 +194,17 @@ def test(loader):
         data = data.to(model.device)
         out = model(data.x, data.edge_index, data.batch)
         pred = out.argmax(dim=1)
-        print(f"pred shape: {pred.shape}, data.y shape: {data.y.shape}")
         correct += int((pred == data.y).sum())
     return correct / len(loader.dataset)
 
-max_text_acc = 0.0
-for epoch in range(1, 1001):
+max_val_acc = 0.0
+for epoch in range(1, 100):
     train()
     train_acc = test(train_loader)
     test_acc = test(test_loader)
-    if max_text_acc < test_acc:
-        max_text_acc = test_acc
-    print(f'Epoch: {epoch:03d}, Train Acc: {train_acc:.4f}, Test Acc: {test_acc:.4f}')
-print(f'Maximal Test Acc: {max_text_acc}')
+    val_acc = test(val_loader)
+    if max_val_acc < val_acc:
+        max_val_acc = val_acc
+        test_at_max_val = test_acc
+    print(f'Epoch: {epoch:03d}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}, Test Acc: {test_acc:.4f}')
+print(f'Test Acc at Maximal Val Acc: {test_at_max_val}')
