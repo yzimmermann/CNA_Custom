@@ -1,37 +1,31 @@
 import sys
 import os
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 import torch
-from torch_geometric.datasets import TUDataset
+from torch_geometric.datasets import LRGBDataset
 from torch_geometric.nn import global_mean_pool
 from torch_geometric.loader import DataLoader
 from torch.nn import Linear
 import torch.nn.functional as F
 from torch_geometric.nn import (
-    ARMAConv, ChebConv, CuGraphSAGEConv, GATConv, GCNConv, GraphConv, LEConv, Linear, MFConv, SAGEConv, Sequential, SGConv, SSGConv, TransformerConv
+    ARMAConv, ChebConv, CuGraphSAGEConv, GATConv, GCNConv, GraphConv, LEConv, Linear, MFConv, SAGEConv, Sequential,
+    SGConv, SSGConv, TransformerConv
 )
 from utils.model_params import LayerType, ModelParams as mp, ActivationType, ReclusterOption
 from clustering.rationals_on_clusters import RationalOnCluster
 
 # Dataset laden
-# dataset = TUDataset(root='data/TUDataset', name='MUTAG')
-dataset = TUDataset(root='data/TUDataset', name='PROTEINS')
-print(f'Dataset: {dataset}:')
-print('====================')
-print(f'Number of graphs: {len(dataset)}')
-print(f'Number of features: {dataset.num_features}')
-print(f'Number of classes: {dataset.num_classes}')
+train_dataset = LRGBDataset(root='data/LRGBDataset', name='Peptides-func', split='train')
+val_dataset = LRGBDataset(root='data/LRGBDataset', name='Peptides-func', split='val')
+test_dataset = LRGBDataset(root='data/LRGBDataset', name='Peptides-func', split='test')
 
-data = dataset[0].to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
-print(data)
-print('=============================================================')
-print(f'Number of nodes: {data.num_nodes}')
-print(f'Number of edges: {data.num_edges}')
-print(f'Average node degree: {data.num_edges / data.num_nodes:.2f}')
-print(f'Has isolated nodes: {data.has_isolated_nodes()}')
-print(f'Has self-loops: {data.has_self_loops()}')
-print(f'Is undirected: {data.is_undirected()}')
+# Print dataset sizes for verification
+print(f'Dataset: {train_dataset}:')
+print(f"Number of training graphs: {len(train_dataset)}")
+print(f"Number of test graphs: {len(test_dataset)}")
+print('====================')
 
 # Modelldefinition
 class Net(torch.nn.Module):
@@ -40,8 +34,8 @@ class Net(torch.nn.Module):
         self.layer_type = layer_type
         self.activation = activation
         self.num_layer = num_layer
-        self.model_ = self._build_sequential_container(dataset.num_features, hidden_features)
-        self.out_layer = Linear(hidden_features, dataset.num_classes)
+        self.model_ = self._build_sequential_container(train_dataset.num_features, hidden_features)
+        self.out_layer = Linear(hidden_features, train_dataset.num_classes)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.log_softmax = torch.nn.LogSoftmax(dim=1)
 
@@ -62,8 +56,8 @@ class Net(torch.nn.Module):
         ]
         for i in range(1, self.num_layer - 1):
             conv_list.extend([
-                (self.activation, f"x{i-1} -> x{i-1}a"),
-                (self._get_conv_layer(hidden_features, hidden_features), f"x{i-1}a, edge_index -> x{i}"),
+                (self.activation, f"x{i - 1} -> x{i - 1}a"),
+                (self._get_conv_layer(hidden_features, hidden_features), f"x{i - 1}a, edge_index -> x{i}"),
             ])
         return Sequential("x, edge_index", conv_list)
 
@@ -97,16 +91,18 @@ class Net(torch.nn.Module):
         else:
             raise ValueError(f"Unsupported layer_type: {self.layer_type}")
 
-torch.manual_seed(3) # 0, 1, 2, 3, 4
-dataset = dataset.shuffle()
-# MUTAG 
+
+torch.manual_seed(3)  # 0, 1, 2, 3, 4
+#dataset = dataset.shuffle()
+# MUTAG
 # train_dataset, test_dataset = dataset[:150], dataset[150:]
-# ENZYMES
-train_dataset, test_dataset = dataset[:951], dataset[951:]
+# Protein-func
+#train_dataset, test_dataset = dataset[:12428], dataset[12428:]
 print(f'Number of training graphs: {len(train_dataset)}')
 print(f'Number of test graphs: {len(test_dataset)}')
 
 train_loader = DataLoader(train_dataset, batch_size=200, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=64, shuffle=False)
 test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
 
 for step, data in enumerate(train_loader):
@@ -117,9 +113,9 @@ for step, data in enumerate(train_loader):
     print()
 
 activation = RationalOnCluster(
-    clusters=8,
+    clusters=24,
     with_clusters=True,
-    #num_activation=8,
+    # num_activation=8,
     n=5,
     m=5,
     activation_type=ActivationType.RAT,
@@ -142,7 +138,7 @@ print(model)
 #         self.lin = Linear(hidden_channels, dataset.num_classes)
 
 #     def forward(self, x, edge_index, batch):
-#         # 1. Obtain node embeddings 
+#         # 1. Obtain node embeddings
 #         x = self.conv1(x, edge_index)
 #         x = x.relu()
 #         x = self.conv2(x, edge_index)
@@ -155,7 +151,7 @@ print(model)
 #         # 3. Apply a final classifier
 #         x = F.dropout(x, p=0.5, training=self.training)
 #         x = self.lin(x)
-        
+
 #         return x
 
 # model = GCN(hidden_channels=64).to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
@@ -164,9 +160,11 @@ print(model)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=0.0001)
 criterion = torch.nn.CrossEntropyLoss()
 
+
 def train():
     model.train()
     for data in train_loader:
+        data.x = data.x.float()  # Convert to float for integer features
         data = data.to(model.device)
         out = model(data.x, data.edge_index, data.batch)
         loss = criterion(out, data.y)
@@ -174,16 +172,19 @@ def train():
         optimizer.step()
         optimizer.zero_grad()
 
+
 def test(loader):
     model.eval()
     correct = 0
     for data in loader:
+        data.x = data.x.float()  # Convert to float for integer features
+        data.y = data.y.argmax(dim=1)  # Convert one-hot labels to class indices
         data = data.to(model.device)
         out = model(data.x, data.edge_index, data.batch)
         pred = out.argmax(dim=1)
-        print(f"pred shape: {pred.shape}, data.y shape: {data.y.shape}")
         correct += int((pred == data.y).sum())
     return correct / len(loader.dataset)
+
 
 max_text_acc = 0.0
 for epoch in range(1, 1001):
