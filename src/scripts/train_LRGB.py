@@ -198,7 +198,7 @@ def test(loader):
     all_preds = np.concatenate(all_preds)
     all_labels = np.concatenate(all_labels)
 
-    uap = average_precision_score(all_labels, all_preds, average='samples')
+    uap = average_precision_score(all_labels, all_preds, average='macro')
     return uap
 
 
