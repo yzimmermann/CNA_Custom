@@ -16,6 +16,9 @@ from torch_geometric.nn import (
 from utils.model_params import LayerType, ModelParams as mp, ActivationType, ReclusterOption
 from clustering.rationals_on_clusters import RationalOnCluster
 
+from sklearn.metrics import average_precision_score
+import numpy as np
+
 # Dataset laden
 train_dataset = LRGBDataset(root='data/LRGBDataset', name='Peptides-func', split='train')
 val_dataset = LRGBDataset(root='data/LRGBDataset', name='Peptides-func', split='val')
@@ -158,11 +161,11 @@ print(model)
 # print(model)
 
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=0.0001)
-criterion = torch.nn.CrossEntropyLoss()
-
+criterion = torch.nn.BCEWithLogitsLoss()
 
 def train():
     model.train()
+    total_loss = 0
     for data in train_loader:
         data.x = data.x.float()  # Convert to float for integer features
         data = data.to(model.device)
@@ -171,27 +174,37 @@ def train():
         loss.backward()
         optimizer.step()
         optimizer.zero_grad()
+        total_loss += loss.item()
+        return total_loss / len(train_loader)
 
 
 def test(loader):
     model.eval()
-    correct = 0
-    for data in loader:
-        data.x = data.x.float()  # Convert to float for integer features
-        data.y = data.y.argmax(dim=1)  # Convert one-hot labels to class indices
-        data = data.to(model.device)
-        out = model(data.x, data.edge_index, data.batch)
-        pred = out.argmax(dim=1)
-        correct += int((pred == data.y).sum())
-    return correct / len(loader.dataset)
+    all_preds = []
+    all_labels = []
+
+    with torch.no_grad():
+        for data in loader:
+            data.x = data.x.float()
+            data = data.to(model.device)
+            out = model(data.x, data.edge_index, data.batch)
+            pred = torch.sigmoid(out).cpu().numpy()  # Convert to probabilities
+            labels = data.y.cpu().numpy()
+            print(pred[0])
+            print(labels[0])
+            all_preds.append(pred)
+            all_labels.append(labels)
+
+    all_preds = np.concatenate(all_preds)
+    all_labels = np.concatenate(all_labels)
+
+    uap = average_precision_score(all_labels, all_preds, average='samples')
+    return uap
 
 
-max_text_acc = 0.0
+# In the main training loop
 for epoch in range(1, 1001):
-    train()
-    train_acc = test(train_loader)
-    test_acc = test(test_loader)
-    if max_text_acc < test_acc:
-        max_text_acc = test_acc
-    print(f'Epoch: {epoch:03d}, Train Acc: {train_acc:.4f}, Test Acc: {test_acc:.4f}')
-print(f'Maximal Test Acc: {max_text_acc}')
+    train_loss = train()
+    train_uap = test(train_loader)
+    test_uap = test(test_loader)
+    print(f'Epoch: {epoch:03d}, Train Loss: {train_loss:.10f}, Train UAP: {train_uap:.4f}, Test UAP: {test_uap:.4f}')
