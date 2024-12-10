@@ -16,10 +16,10 @@ from clustering.rationals_on_clusters import RationalOnCluster
 
 from extra_utils import set_seed
 
-set_seed(133)
+set_seed(135)
 
 # load data
-dataset = TUDataset(root='data/TUDataset', name='PROTEINS')
+dataset = TUDataset(root='data/TUDataset', name='ENZYMES')
 
 print(f'Dataset: {dataset}:')
 print('====================')
@@ -151,11 +151,7 @@ criterion = torch.nn.CrossEntropyLoss()
 def train():
     model.train()
     for data in train_loader:
-        print(data.x.shape)
         out = model(data.x, data.edge_index, data.batch)
-        print(out.shape)
-        print(data.y.shape)
-        exit()
         loss = criterion(out, data.y)
         loss.backward()
         optimizer.step()
