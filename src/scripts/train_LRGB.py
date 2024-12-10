@@ -16,7 +16,6 @@ from torch_geometric.nn import (
 from utils.model_params import LayerType, ModelParams as mp, ActivationType, ReclusterOption
 from clustering.rationals_on_clusters import RationalOnCluster
 
-#from sklearn.metrics import average_precision_score
 import numpy as np
 from torchmetrics.classification import MultilabelAveragePrecision
 
@@ -153,7 +152,8 @@ activation = RationalOnCluster(
     recluster_option=ReclusterOption.ITR,
 )
 
-# activation = torch.nn.ReLU
+
+activation = torch.nn.ReLU
 
 model = Net(activation, 300, 5, LayerType.GATCONV).to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
 print(model)

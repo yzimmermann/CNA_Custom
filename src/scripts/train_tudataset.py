@@ -16,11 +16,11 @@ from clustering.rationals_on_clusters import RationalOnCluster
 
 from extra_utils import set_seed
 
-set_seed(71)
+set_seed(133)
 
-# Dataset laden
-# dataset = TUDataset(root='data/TUDataset', name='MUTAG')
-dataset = TUDataset(root='data/TUDataset', name='ENZYMES')
+# load data
+dataset = TUDataset(root='data/TUDataset', name='PROTEINS')
+
 print(f'Dataset: {dataset}:')
 print('====================')
 print(f'Number of graphs: {len(dataset)}')
@@ -66,8 +66,8 @@ class Net(torch.nn.Module):
         ]
         for i in range(1, self.num_layer - 1):
             conv_list.extend([
-                (self.activation, f"x{i-1} -> x{i-1}a"),
-                (self._get_conv_layer(hidden_features, hidden_features), f"x{i-1}a, edge_index -> x{i}"),
+                (self.activation, f"x{i - 1} -> x{i - 1}a"),
+                (self._get_conv_layer(hidden_features, hidden_features), f"x{i - 1}a, edge_index -> x{i}"),
             ])
         return Sequential("x, edge_index", conv_list)
 
@@ -103,9 +103,6 @@ class Net(torch.nn.Module):
 
 dataset = dataset.shuffle()
 total_graphs = len(dataset)
-# MUTAG 
-# train_dataset, test_dataset = dataset[:150], dataset[150:]
-# ENZYMES
 # Create mask for training, test and validation
 train, test, val = (0.8, 0.1, 0.1)
 train_mask = int(total_graphs * train)
@@ -128,19 +125,22 @@ for step, data in enumerate(train_loader):
     print(data)
     print()
 
-activation = RationalOnCluster(
-    clusters=8,
-    with_clusters=False,
-    #num_activation=8,
-    n=5,
-    m=4,
-    activation_type=ActivationType.RAT,
-    mode=True,
-    normalize=False,
-    recluster_option=ReclusterOption.ITR,
-)
+CNA = True
 
-# activation = torch.nn.ReLU
+if CNA:
+    activation = RationalOnCluster(
+        clusters=8,
+        with_clusters=True,
+        #num_activation=8,
+        n=5,
+        m=4,
+        activation_type=ActivationType.RAT,
+        mode=True,
+        normalize=True,
+        recluster_option=ReclusterOption.ITR,
+    )
+else:
+    activation = torch.nn.ReLU()
 
 model = Net(activation, 128, 4, LayerType.GCNCONV).to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
 print(model)
@@ -151,8 +151,11 @@ criterion = torch.nn.CrossEntropyLoss()
 def train():
     model.train()
     for data in train_loader:
-        data = data.to(model.device)
+        print(data.x.shape)
         out = model(data.x, data.edge_index, data.batch)
+        print(out.shape)
+        print(data.y.shape)
+        exit()
         loss = criterion(out, data.y)
         loss.backward()
         optimizer.step()
@@ -169,7 +172,7 @@ def test(loader):
     return correct / len(loader.dataset)
 
 max_val_acc = 0.0
-for epoch in range(1, 100):
+for epoch in range(1, 1000):
     train()
     train_acc = test(train_loader)
     test_acc = test(test_loader)
@@ -178,4 +181,4 @@ for epoch in range(1, 100):
         max_val_acc = val_acc
         test_at_max_val = test_acc
     print(f'Epoch: {epoch:03d}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}, Test Acc: {test_acc:.4f}')
-print(f'Test Acc at Maximal Val Acc: {test_at_max_val}')
+print(f'Test Acc at Maximal Val Acc: {test_at_max_val:.4f}')
