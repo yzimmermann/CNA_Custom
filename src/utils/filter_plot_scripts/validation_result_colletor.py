@@ -55,6 +55,7 @@ def process_directory_for_max_accuracies(base_directory):
     results = []
     for root, _, files in os.walk(base_directory):
         for file in files:
+            print(f"Processing {file}")
             if file.endswith(".txt"):
                 file_path = os.path.join(root, file)
                 accuracy_dict = extract_max_validation_and_test_accuracy(file_path)
@@ -122,7 +123,7 @@ def save_results_to_json(data, output_file):
         json.dump(data, json_file, indent=2)
 
 if __name__ == "__main__":
-    base_directory = "log_files/ablation_cora/"
+    base_directory = "log_files/overfit/"
     output_json = "results_max_accuracies.json"
     
     # Process directory and collect results

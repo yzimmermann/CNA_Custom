@@ -1,5 +1,5 @@
 {
-    "experiment_number": 35,
+    "experiment_number": 989003,
     "epochs": 100,
     "lr_model": 0.001,
     "lr_activation": 1e-05,

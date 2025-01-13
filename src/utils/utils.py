@@ -137,24 +137,28 @@ def load_dataset(
         print("Node number (totally): ", total_nodes)
         print("============================================")
 
-        if mode:
+        if True:
             # Calculate the number of nodes for each split based on the given percentages
-            train_percentage, test_percentage, valid_percentage = (80, 10, 10)
+            train_percentage, valid_percentage, test_percentage = (80, 10, 10)
             num_train_nodes = int(total_nodes * (train_percentage / 100))
-            num_test_nodes = int(total_nodes * (test_percentage / 100))
             num_valid_nodes = int(total_nodes * (valid_percentage / 100))
+            num_test_nodes = int(total_nodes * (test_percentage / 100))
 
-            # Update masks accordingly
+            # Generate random permutation of node indices
+            permuted_indices = torch.randperm(total_nodes)
+
+            # Assign masks based on the random permutation
             dataset[0].train_mask.fill_(False)
-            dataset[0].train_mask[:num_train_nodes] = 1
+            dataset[0].train_mask[permuted_indices[:num_train_nodes]] = 1
+
             dataset[0].val_mask.fill_(False)
-            dataset[0].val_mask[num_train_nodes : num_train_nodes + num_valid_nodes] = 1
+            dataset[0].val_mask[
+                permuted_indices[num_train_nodes: num_train_nodes + num_valid_nodes]
+            ] = 1
+
             dataset[0].test_mask.fill_(False)
             dataset[0].test_mask[
-                num_train_nodes
-                + num_valid_nodes : num_train_nodes
-                + num_valid_nodes
-                + num_test_nodes
+                permuted_indices[num_train_nodes + num_valid_nodes:]
             ] = 1
 
             dataset[0].transform = T.NormalizeFeatures()
@@ -193,7 +197,7 @@ def load_pyg_node_prop_pred_dataset(name="ogbn-arxiv", root="."):
     dataset = PygNodePropPredDataset(root=root, name=name, transform=T.TargetIndegree())
     data = dataset[0]
     data.y = data.y.squeeze(dim=1)
-    if mode:
+    if True:
         train_percent, val_percent, test_percent = (80, 10, 10)
     else:
         train_percent, val_percent, test_percent = (60, 20, 20)
@@ -226,7 +230,7 @@ def load_wikipedianetwork_dataset(name="Chameleon", root="."):
     """
     dataset = WikipediaNetwork(root=root, name=name, transform=T.NormalizeFeatures())
     data = dataset[0]
-    if mode:
+    if True:
         train_percent, val_percent, test_percent = (80, 10, 10)
     else:
         train_percent, val_percent, test_percent = (40, 30, 30)
@@ -261,9 +265,9 @@ def load_webkb_dataset(name="Texas", root="."):
     dataset = WebKB(root=root, name=name, transform=T.NormalizeFeatures())
     data = dataset[0]
     print(data)
-    if mode:
+    if True:
         if name == "Texas":
-            train_percent, val_percent, test_percent = (70, 15, 15)
+            train_percent, val_percent, test_percent = (80, 10, 10)
         else:
             train_percent, val_percent, test_percent = (80, 10, 10)
     else:
@@ -299,7 +303,7 @@ def load_amazon_dataset(name="Computers", root="."):
     dataset = Amazon(root, name, transform=T.TargetIndegree())
     data = dataset[0]
     num_classes = dataset.num_classes
-    if mode:
+    if True:
         train_percent, val_percent, test_percent = (80, 10, 10)
     else:
         train_percent, val_percent, test_percent = (40, 30, 30)
@@ -335,7 +339,7 @@ def load_full_dataset(name="Cora", root="."):
     data = dataset[0]
 
     num_classes = dataset.num_classes
-    if mode:
+    if True:
         train_percent, val_percent, test_percent = (80, 10, 10)
     else:
         train_percent, val_percent, test_percent = (40, 30, 30)
